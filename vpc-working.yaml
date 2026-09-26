@@ -1,0 +1,88 @@
+# Description of what this change includes
+# Revision number
+# Date: 9/26/26
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation template that creates a VPC named VPC-chrlov3475
+  in the AWS US-West-2 region and spans a minimum of three Availability Zones.
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: CIDR block for the VPC
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: VPC-chrlov3475
+
+  # Availability Zone 1
+  SubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs us-west-2
+      CidrBlock: 10.0.1.0/24
+      Tags:
+        - Key: Name
+          Value: VPC-chrlov3475-subnet-az1
+
+  # Availability Zone 2
+  SubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs us-west-2
+      CidrBlock: 10.0.2.0/24
+      Tags:
+        - Key: Name
+          Value: VPC-chrlov3475-subnet-az2
+
+  # Availability Zone 3
+  SubnetAZ3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs us-west-2
+      CidrBlock: 10.0.3.0/24
+      Tags:
+        - Key: Name
+          Value: VPC-chrlov3475-subnet-az3
+
+Outputs:
+  VPCId:
+    Description: ID of the VPC
+    Value: !Ref VPC
+
+  VPCName:
+    Description: Name of the VPC
+    Value: VPC-chrlov3475
+
+  AvailabilityZones:
+    Description: Availability Zones used by the VPC
+    Value: !Join
+      - ','
+      - - !GetAtt SubnetAZ1.AvailabilityZone
+        - !GetAtt SubnetAZ2.AvailabilityZone
+        - !GetAtt SubnetAZ3.AvailabilityZone
+
+  SubnetIds:
+    Description: Subnets spanning three Availability Zones
+    Value: !Join
+      - ','
+      - - !Ref SubnetAZ1
+        - !Ref SubnetAZ2
+        - !Ref SubnetAZ3
